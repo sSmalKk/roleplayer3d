@@ -1,4 +1,4 @@
-//chunk.js//
+"use client";
 import { useCallback, useRef } from "react";
 import { Cubes } from "./Cube";
 

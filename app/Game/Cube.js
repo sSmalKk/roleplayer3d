@@ -1,3 +1,4 @@
+"use client";
 import { useCallback, useRef, useState } from "react";
 import { useTexture } from "@react-three/drei";
 import { RigidBody } from "@react-three/rapier";

@@ -1,3 +1,4 @@
+"use client";
 import React from 'react';
 import { Chunk } from './Chunk';
 import create from 'zustand';

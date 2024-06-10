@@ -1,3 +1,4 @@
+"use client";
 import * as THREE from "three"
 import * as RAPIER from "@dimforge/rapier3d-compat"
 import { useRef, useState } from "react" // Added useState import

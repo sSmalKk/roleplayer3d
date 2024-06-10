@@ -1,3 +1,4 @@
+"use client";
   import { Canvas } from "@react-three/fiber";
   import { Sky, PointerLockControls, KeyboardControls } from "@react-three/drei";
   import { Physics } from "@react-three/rapier";

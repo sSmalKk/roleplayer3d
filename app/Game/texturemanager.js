@@ -1,3 +1,4 @@
+"use client";
 const textureManager = {
     textures: {
       dirt: ["dirt.jpg"],

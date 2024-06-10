@@ -1,0 +1,129 @@
+import { useCallback, useRef, useState } from "react";
+import { useTexture } from "@react-three/drei";
+import { RigidBody } from "@react-three/rapier";
+import create from "zustand";
+import dirt from "../assets/dirt.jpg";
+
+const useCubeStore = create((set) => ({
+  selectedCube: null,
+  selectedFace: null,
+  selectedMouseButton: null,
+  setSelectedCube: (coords, faceIndex, mouseButton) =>
+    set({ selectedCube: coords, selectedFace: faceIndex, selectedMouseButton: mouseButton }),
+}));
+
+export const Cubes = ({ cubes, textureArray }) => {
+  const setSelectedCube = useCubeStore((state) => state.setSelectedCube);
+
+  const handleCubeClick = (coords, faceIndex, mouseButton) => {
+    setSelectedCube(coords, faceIndex, mouseButton);
+  };
+
+  console.log("Cubes array:", cubes); // Debug para a array de cubos
+  return cubes.map((cube, index) => {
+    const [position, id1, textureType, rigidBodyType] = cube;
+  
+    console.log(`Cube ${index} - Position:`, position); // Debug para a posição do cubo
+    console.log(`Cube ${index} - ID:`, id1); // Debug para o ID do cubo
+    console.log(`Cube ${index} - Texture Type:`, textureType); // Debug para o tipo de textura do cubo
+    console.log(`Cube ${index} - RigidBody Type:`, rigidBodyType); // Debug para o tipo de RigidBody do cubo
+
+    const texture = [textureType] || [dirt, dirt, dirt, dirt, dirt, dirt];
+    const [x, y, z] = position;
+
+    // Verifica se há um cubo adjacente em cada direção
+    const hasCubeLeft = cubes.some(([cx, cy, cz]) => cx === x - 1 && cy === y && cz === z);
+    const hasCubeRight = cubes.some(([cx, cy, cz]) => cx === x + 1 && cy === y && cz === z);
+    const hasCubeTop = cubes.some(([cx, cy, cz]) => cx === x && cy === y + 1 && cz === z);
+    const hasCubeBottom = cubes.some(([cx, cy, cz]) => cx === x && cy === y - 1 && cz === z);
+    const hasCubeFront = cubes.some(([cx, cy, cz]) => cx === x && cy === y && cz === z + 1);
+    const hasCubeBack = cubes.some(([cx, cy, cz]) => cx === x && cy === y && cz === z - 1);
+    
+    return (
+      <Cube
+      key={index}
+        position={position}
+        onClick={handleCubeClick}
+        faceIndex={index}
+        texture={texture}
+        hasCubeLeft={hasCubeLeft}
+        hasCubeRight={hasCubeRight}
+        hasCubeTop={hasCubeTop}
+        hasCubeBottom={hasCubeBottom}
+        hasCubeFront={hasCubeFront}
+        hasCubeBack={hasCubeBack}
+        rigidBodyType={rigidBodyType} // Passa o tipo de RigidBody como prop
+      />
+    );
+  });
+};
+
+export function Cube({ position, faceIndex, onClick, texture, hasCubeLeft, hasCubeRight, hasCubeTop, hasCubeBottom, hasCubeFront, hasCubeBack, rigidBodyType }) {
+  const ref = useRef();
+  const [hoveredFace, setHoveredFace] = useState(null);
+  const defaultTexture = useTexture(dirt);
+  const handleMouseEnter = useCallback((index) => {
+    setHoveredFace(index);
+  }, [setHoveredFace]);
+  
+  const handleMouseLeave = useCallback(() => {
+    setHoveredFace(null);
+  }, [setHoveredFace]);
+
+  const handleMouseClick = useCallback(
+    (e) => {
+      const clickedFaceIndex = Math.floor(e.faceIndex / 2);
+      const button = e.button;
+      const coords = position;
+
+      console.debug("Face:", clickedFaceIndex, "Button:", button, "Coords:", coords);
+
+      onClick(coords, clickedFaceIndex, button);
+    },
+    [onClick, position]
+  );
+
+  return (
+    <group position={position} receiveShadow castShadow  onClick={handleMouseClick} ref={ref}>
+      <RigidBody type={"fixed"} colliders="cuboid">
+        {!hasCubeLeft && (
+          <mesh key={0} position={[-0.5, 0, 0]} rotation={[0, -Math.PI / 2, 0]} onPointerOut={() => handleMouseLeave(0)} onPointerMove={() => handleMouseEnter(0)}>
+            <planeGeometry />
+            <meshStandardMaterial attach="material" map={texture[0] || defaultTexture} color={hoveredFace === 0 ? "hotpink" : "white"} />
+          </mesh>
+        )}
+      
+      {!hasCubeRight && (
+        <mesh key={1} position={[0.5, 0, 0]} rotation={[0, Math.PI / 2, 0]} scale={[-1, 1, 1]}onPointerOut={() => handleMouseLeave(1)} onPointerMove={() => handleMouseEnter(1)}>
+          <planeGeometry />
+          <meshStandardMaterial attach="material" map={texture || defaultTexture} color={hoveredFace === 1 ? "hotpink" : "white"} />
+        </mesh>
+      )}
+      {!hasCubeTop && (
+        <mesh key={2} position={[0, 0.5, 0]} rotation={[-Math.PI / 2, 0, 0]}onPointerOut={() => handleMouseLeave(2)} onPointerMove={() => handleMouseEnter(2)}>
+          <planeGeometry />
+          <meshStandardMaterial attach="material" map={texture || defaultTexture} color={hoveredFace === 2 ? "hotpink" : "white"} />
+        </mesh>
+      )}
+      {!hasCubeBottom && (
+        <mesh key={3} position={[0, -0.5, 0]} rotation={[Math.PI / 2, 0, 0]}onPointerOut={() => handleMouseLeave(3)} onPointerMove={() => handleMouseEnter(3)}>
+          <planeGeometry />
+          <meshStandardMaterial attach="material" map={texture || defaultTexture} color={hoveredFace === 3 ? "hotpink" : "white"} />
+        </mesh>
+      )}
+      {!hasCubeFront && (
+        <mesh key={4} position={[0, 0, 0.5]} rotation={[0, 0, 0]}onPointerOut={() => handleMouseLeave(4)} onPointerMove={() => handleMouseEnter(4)}>
+          <planeGeometry />
+          <meshStandardMaterial attach="material" map={texture || defaultTexture} color={hoveredFace === 4 ? "hotpink" : "white"} />
+        </mesh>
+      )}
+      {!hasCubeBack && (
+        <mesh key={5} position={[0, 0, -0.5]} rotation={[0, Math.PI, 0]}onPointerOut={() => handleMouseLeave(5)} onPointerMove={() => handleMouseEnter(5)}>
+          <planeGeometry />
+          <meshStandardMaterial attach="material" map={texture || defaultTexture} color={hoveredFace === 5 ? "hotpink" : "white"} />
+        </mesh>
+      )}
+      </RigidBody>
+    </group>
+  );
+}

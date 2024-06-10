@@ -1,0 +1,31 @@
+    
+const useClusterStore = create((set) => ({
+  clusters: [],
+  addCluster: (id, x, y, z, cubesArray) =>
+    set((state) => ({
+      clusters: [...state.clusters, { id, x, y, z, cubesArray }],
+    })),
+}));
+
+export const Clusters = () => {
+  const clusters = useClusterStore((state) => state.clusters);
+  return clusters.map((cluster) => (
+    <Cluster
+      key={cluster.id}
+      x={cluster.x}
+      y={cluster.y}
+      z={cluster.z}
+      cubesArray={cluster.cubesArray} // Passando cubesArray do estado para o Cluster
+      onClick={(coords, faceIndex, button) =>
+        console.debug(
+          "clusterFace:",
+          faceIndex,
+          "Coords:",
+          coords,
+          "Button:",
+          button
+        )
+      }
+    />
+  ));
+};
